@@ -5,6 +5,7 @@ import IdeaCard from "@/components/IdeaCard";
 import IdeaDetailModal from "@/components/IdeaDetailModal";
 import Navbar from "@/components/Navbar";
 import PostIdeaModal from "@/components/PostIdeaModal";
+import { Button } from "@/components/ui/button";
 import {
   createIdea,
   deleteIdea,
@@ -194,57 +195,49 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             {/* Categories */}
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              <button
+              <Button
                 type="button"
+                variant={activeCategory === "All" ? "default" : "outline"}
+                size="sm"
                 onClick={() => setActiveCategory("All")}
-                className={`shrink-0 text-sm px-4 py-2 rounded-full border transition-all cursor-pointer ${
-                  activeCategory === "All"
-                    ? "bg-gray-900 text-white border-gray-900"
-                    : "border-gray-200 text-gray-500 hover:border-gray-300 bg-white"
-                }`}
+                className="shrink-0 rounded-full px-4"
               >
                 All
-              </button>
+              </Button>
               {CATEGORIES.map((cat) => (
-                <button
+                <Button
                   key={cat}
                   type="button"
+                  variant={activeCategory === cat ? "default" : "outline"}
+                  size="sm"
                   onClick={() => setActiveCategory(cat)}
-                  className={`shrink-0 text-sm px-4 py-2 rounded-full border transition-all cursor-pointer ${
-                    activeCategory === cat
-                      ? "bg-gray-900 text-white border-gray-900"
-                      : "border-gray-200 text-gray-500 hover:border-gray-300 bg-white"
-                  }`}
+                  className="shrink-0 rounded-full px-4"
                 >
                   {cat}
-                </button>
+                </Button>
               ))}
             </div>
 
             {/* Sort */}
             <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-full p-1 shrink-0">
-              <button
+              <Button
                 type="button"
+                variant={sortBy === "recent" ? "default" : "ghost"}
+                size="sm"
                 onClick={() => setSortBy("recent")}
-                className={`text-xs font-medium px-3 py-1.5 rounded-full transition-all cursor-pointer ${
-                  sortBy === "recent"
-                    ? "bg-gray-900 text-white"
-                    : "text-gray-400 hover:text-gray-600"
-                }`}
+                className="text-xs px-3 py-1.5 rounded-full"
               >
                 Recent
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant={sortBy === "popular" ? "default" : "ghost"}
+                size="sm"
                 onClick={() => setSortBy("popular")}
-                className={`text-xs font-medium px-3 py-1.5 rounded-full transition-all cursor-pointer ${
-                  sortBy === "popular"
-                    ? "bg-gray-900 text-white"
-                    : "text-gray-400 hover:text-gray-600"
-                }`}
+                className="text-xs px-3 py-1.5 rounded-full"
               >
                 Popular
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -302,13 +295,13 @@ export default function Home() {
                   ? "Try a different search term"
                   : "Be the first to share an idea in this category!"}
               </p>
-              <button
+              <Button
                 type="button"
                 onClick={() => setShowPost(true)}
-                className="bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium px-6 py-2.5 rounded-full transition-all cursor-pointer"
+                className="text-sm font-medium px-6 py-2.5 rounded-full"
               >
                 + Share an Idea
-              </button>
+              </Button>
             </div>
           )}
         </div>

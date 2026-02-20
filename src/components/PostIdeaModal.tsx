@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import type { Category } from "@/lib/types";
 import { CATEGORIES, LOOKING_FOR_OPTIONS } from "@/lib/types";
 
@@ -113,9 +115,8 @@ export default function PostIdeaModal({
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center">
       {/* Backdrop */}
-      <button
-        type="button"
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm border-0 p-0 cursor-default"
+      <div
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm cursor-default"
         onClick={(e) => {
           // Only close if clicking directly on the backdrop, not on modal content
           if (
@@ -125,12 +126,7 @@ export default function PostIdeaModal({
             onClose();
           }
         }}
-        onKeyDown={(e) => {
-          if (e.key === "Escape") {
-            onClose();
-          }
-        }}
-        aria-label="Close modal"
+        aria-hidden="true"
       />
 
       {/* Modal */}
@@ -149,10 +145,12 @@ export default function PostIdeaModal({
                 Tell the world what you&apos;re building
               </p>
             </div>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               onClick={onClose}
-              className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors cursor-pointer"
+              className="rounded-full"
             >
               <svg
                 width="18"
@@ -161,11 +159,12 @@ export default function PostIdeaModal({
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
+                aria-hidden="true"
               >
-                <title>Close</title>
                 <path d="M18 6L6 18M6 6l12 12" />
               </svg>
-            </button>
+              <span className="sr-only">Close</span>
+            </Button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -257,13 +256,12 @@ export default function PostIdeaModal({
                 >
                   Description *
                 </label>
-                <textarea
+                <Textarea
                   id="idea-description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Describe your idea, the problem it solves, and why you're excited about it..."
                   rows={4}
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all text-sm resize-none"
                   required
                 />
               </div>
@@ -296,21 +294,19 @@ export default function PostIdeaModal({
               </h3>
               <div className="flex flex-wrap gap-2">
                 {LOOKING_FOR_OPTIONS.map((role) => (
-                  <button
+                  <Button
                     key={role}
                     type="button"
+                    variant={lookingFor.includes(role) ? "default" : "outline"}
+                    size="sm"
                     onClick={() => {
                       toggleLookingFor(role);
                       if (error) setError("");
                     }}
-                    className={`text-sm px-4 py-2 rounded-full border transition-all cursor-pointer ${
-                      lookingFor.includes(role)
-                        ? "bg-indigo-50 border-indigo-300 text-indigo-700 font-medium"
-                        : "border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700"
-                    }`}
+                    className="rounded-full px-4"
                   >
                     {role}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -323,12 +319,12 @@ export default function PostIdeaModal({
             )}
 
             {/* Submit */}
-            <button
+            <Button
               type="submit"
-              className="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 rounded-2xl transition-all hover:shadow-lg hover:shadow-gray-900/20 active:scale-[0.99] text-sm cursor-pointer"
+              className="w-full rounded-2xl py-3 text-sm font-medium shadow-sm"
             >
               Publish Idea 🚀
-            </button>
+            </Button>
           </form>
         </div>
       </div>
