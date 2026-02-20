@@ -1,8 +1,6 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { NextResponse } from "next/server";
-import { KV_KEY_IDEAS } from "@/lib/constants";
-import { SEED_IDEAS } from "@/lib/seed";
-import type { Idea } from "@/lib/types";
+import { IDEA_KV_PREFIX } from "@/lib/constants";
 
 interface ErrorResponse {
   error: string;
@@ -17,19 +15,17 @@ export async function DELETE(
   const { env } = await getCloudflareContext({ async: true });
   const kv = env.DATA_KV;
 
-  const raw = await kv.get(KV_KEY_IDEAS);
-  const ideas: Idea[] = raw ? JSON.parse(raw) : SEED_IDEAS;
-
-  const ideaExists = ideas.some((idea) => idea.id === id);
-  if (!ideaExists) {
+  // Check if idea exists
+  const ideaRaw = await kv.get(`${IDEA_KV_PREFIX}${id}`);
+  if (!ideaRaw) {
     return NextResponse.json<ErrorResponse>(
       { error: "Idea not found" },
       { status: 404 },
     );
   }
 
-  const updated = ideas.filter((idea) => idea.id !== id);
-  await kv.put(KV_KEY_IDEAS, JSON.stringify(updated));
+  // Delete the idea
+  await kv.delete(`${IDEA_KV_PREFIX}${id}`);
 
   return NextResponse.json({ success: true }, { status: 200 });
 }

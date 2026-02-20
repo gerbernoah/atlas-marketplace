@@ -1,7 +1,6 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { NextResponse } from "next/server";
-import { KV_KEY_IDEAS } from "@/lib/constants";
-import { SEED_IDEAS } from "@/lib/seed";
+import { IDEA_KV_PREFIX } from "@/lib/constants";
 import type { Idea } from "@/lib/types";
 
 interface LikeActionBody {
@@ -24,29 +23,22 @@ export async function POST(
   const body = await request.json<LikeActionBody>();
   const action: "like" | "unlike" = body.action ?? "like";
 
-  const raw = await kv.get(KV_KEY_IDEAS);
-  const ideas: Idea[] = raw ? JSON.parse(raw) : SEED_IDEAS;
-
-  let updatedIdea: Idea | null = null;
-
-  const updated = ideas.map((idea) => {
-    if (idea.id === id) {
-      const newLikes =
-        action === "like" ? idea.likes + 1 : Math.max(0, idea.likes - 1);
-      updatedIdea = { ...idea, likes: newLikes };
-      return updatedIdea;
-    }
-    return idea;
-  });
-
-  if (!updatedIdea) {
+  // Get the idea
+  const ideaRaw = await kv.get(`${IDEA_KV_PREFIX}${id}`);
+  if (!ideaRaw) {
     return NextResponse.json<ErrorResponse>(
       { error: "Idea not found" },
       { status: 404 },
     );
   }
 
-  await kv.put(KV_KEY_IDEAS, JSON.stringify(updated));
+  const idea = JSON.parse(ideaRaw) as Idea;
+  const newLikes =
+    action === "like" ? idea.likes + 1 : Math.max(0, idea.likes - 1);
+  const updatedIdea: Idea = { ...idea, likes: newLikes };
+
+  // Update just this idea
+  await kv.put(`${IDEA_KV_PREFIX}${id}`, JSON.stringify(updatedIdea));
 
   return NextResponse.json<Idea>(updatedIdea);
 }

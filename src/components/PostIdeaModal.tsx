@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { CATEGORIES, LOOKING_FOR_OPTIONS } from "@/lib/types";
+import { useEffect, useRef, useState } from "react";
 import type { Category } from "@/lib/types";
+import { CATEGORIES, LOOKING_FOR_OPTIONS } from "@/lib/types";
 
 interface PostIdeaModalProps {
   open: boolean;
@@ -33,19 +33,55 @@ export default function PostIdeaModal({
   const [name, setName] = useState("");
   const [tagline, setTagline] = useState("");
   const [email, setEmail] = useState("");
+  const [error, setError] = useState<string>("");
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && open) {
+        onClose();
+      }
+    };
+    if (open) {
+      document.addEventListener("keydown", handleEscape);
+      return () => document.removeEventListener("keydown", handleEscape);
+    }
+  }, [open, onClose]);
 
   if (!open) return null;
 
   const toggleLookingFor = (role: string) => {
     setLookingFor((prev) =>
-      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role],
     );
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !description || !name || !email || lookingFor.length === 0)
+
+    // Validate all required fields
+    if (!title.trim()) {
+      setError("Please enter a title for your idea");
       return;
+    }
+    if (!description.trim()) {
+      setError("Please enter a description for your idea");
+      return;
+    }
+    if (!name.trim()) {
+      setError("Please enter your name");
+      return;
+    }
+    if (!email.trim()) {
+      setError("Please enter your email");
+      return;
+    }
+    if (lookingFor.length === 0) {
+      setError("Please select at least one role you're looking for");
+      return;
+    }
+
+    setError("");
 
     const initials = name
       .split(" ")
@@ -70,23 +106,38 @@ export default function PostIdeaModal({
     setName("");
     setTagline("");
     setEmail("");
+    setError("");
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center">
+    <div className="fixed inset-0 z-100 flex items-center justify-center">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-        onKeyDown={() => {}}
-        role="button"
-        tabIndex={-1}
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm border-0 p-0 cursor-default"
+        onClick={(e) => {
+          // Only close if clicking directly on the backdrop, not on modal content
+          if (
+            e.target === e.currentTarget ||
+            !modalRef.current?.contains(e.target as Node)
+          ) {
+            onClose();
+          }
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            onClose();
+          }
+        }}
         aria-label="Close modal"
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+      <div
+        ref={modalRef}
+        className="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto"
+      >
         <div className="p-8">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
@@ -111,6 +162,7 @@ export default function PostIdeaModal({
                 stroke="currentColor"
                 strokeWidth="2"
               >
+                <title>Close</title>
                 <path d="M18 6L6 18M6 6l12 12" />
               </svg>
             </button>
@@ -247,7 +299,10 @@ export default function PostIdeaModal({
                   <button
                     key={role}
                     type="button"
-                    onClick={() => toggleLookingFor(role)}
+                    onClick={() => {
+                      toggleLookingFor(role);
+                      if (error) setError("");
+                    }}
                     className={`text-sm px-4 py-2 rounded-full border transition-all cursor-pointer ${
                       lookingFor.includes(role)
                         ? "bg-indigo-50 border-indigo-300 text-indigo-700 font-medium"
@@ -259,6 +314,13 @@ export default function PostIdeaModal({
                 ))}
               </div>
             </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                <p className="text-sm text-red-600 font-medium">{error}</p>
+              </div>
+            )}
 
             {/* Submit */}
             <button

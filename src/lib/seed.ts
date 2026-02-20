@@ -1,7 +1,7 @@
 import type { Idea } from "./types";
 
 export const SEED_IDEAS: Idea[] = [
-  /*{
+  {
     id: "seed-1",
     title: "GreenLedger – Carbon Tracking for SMBs",
     description:
@@ -96,5 +96,5 @@ export const SEED_IDEAS: Idea[] = [
     lookingFor: ["Frontend Developer", "Designer", "Marketing"],
     createdAt: "2026-02-18T10:00:00.000Z",
     likes: 112,
-  },*/
+  },
 ];

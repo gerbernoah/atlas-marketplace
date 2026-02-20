@@ -1,1 +1,1 @@
-export const KV_KEY_IDEAS = "ideas";
+export const IDEA_KV_PREFIX = "idea/";

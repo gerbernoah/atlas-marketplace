@@ -1,6 +1,6 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { NextResponse } from "next/server";
-import { KV_KEY_IDEAS } from "@/lib/constants";
+import { IDEA_KV_PREFIX } from "@/lib/constants";
 import { SEED_IDEAS } from "@/lib/seed";
 import type { Idea } from "@/lib/types";
 
@@ -14,15 +14,28 @@ async function getKV() {
 // GET /api/ideas — fetch all ideas
 export async function GET() {
   const kv = await getKV();
-  const raw = await kv.get(KV_KEY_IDEAS);
+  const listResult = await kv.list({ prefix: IDEA_KV_PREFIX });
 
-  if (!raw) {
-    // Seed on first access
-    await kv.put(KV_KEY_IDEAS, JSON.stringify(SEED_IDEAS));
+  // If no ideas exist, seed them
+  if (listResult.keys.length === 0) {
+    for (const idea of SEED_IDEAS) {
+      await kv.put(`${IDEA_KV_PREFIX}${idea.id}`, JSON.stringify(idea));
+    }
     return NextResponse.json<Idea[]>(SEED_IDEAS);
   }
 
-  const ideas = JSON.parse(raw) as Idea[];
+  const ideas: Idea[] = [];
+  for (const key of listResult.keys) {
+    const ideaRaw = await kv.get(key.name);
+    if (ideaRaw) {
+      ideas.push(JSON.parse(ideaRaw) as Idea);
+    }
+  }
+
+  ideas.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+
   return NextResponse.json<Idea[]>(ideas);
 }
 
@@ -38,11 +51,8 @@ export async function POST(request: Request) {
     likes: 0,
   };
 
-  const raw = await kv.get(KV_KEY_IDEAS);
-  const ideas: Idea[] = raw ? JSON.parse(raw) : SEED_IDEAS;
-  const updated = [newIdea, ...ideas];
-
-  await kv.put(KV_KEY_IDEAS, JSON.stringify(updated));
+  // Store the individual idea
+  await kv.put(`${IDEA_KV_PREFIX}${newIdea.id}`, JSON.stringify(newIdea));
 
   return NextResponse.json<Idea>(newIdea, { status: 201 });
 }
